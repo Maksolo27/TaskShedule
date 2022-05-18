@@ -43,7 +43,7 @@ public class TaskService {
     public void addTask(Task task){
         FileInputStream fileInputStream = new FileInputStream(PATH);
         task.setCreatedOn(new Date());
-
+        task.setActive(true);
         Task[] tasks = GSON.fromJson(readFile(fileInputStream), Task[].class);
         List<Task> taskList = new ArrayList<>(List.of(tasks));
         taskList.add(task);
@@ -78,10 +78,6 @@ public class TaskService {
         writeFile(GSON.toJson(tasks), PATH);
     }
 
-    public void updateTask(String name) {
-        List<Task> tasks = getTasks();
-
-    }
 
     public Task getTask(String name){
         List<Task> taskList = getTasks();
