@@ -77,6 +77,13 @@ public class Console {
         taskService.removeTask(oldName);
         taskService.addTask(task);
     }
+
+    public void maksAsCompleted(){
+        System.out.println("Input name of task, which you want mark as complted");
+        updateScanner();
+        Task task = taskService.getTask(scanner.nextLine());
+        task.setCompletedOn(new Date());
+    }
     private void updateScanner(){
         scanner = new Scanner(System.in);
     }
