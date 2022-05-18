@@ -1,12 +1,13 @@
 package db;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.Date;
 
-@Data
+@Getter@Setter
 public class Task {
-    private int id;
     private String name;
     private String description;
     private Date deadline;
@@ -14,4 +15,15 @@ public class Task {
     private Date createdOn;
     private Date completedOn;
     private String password;
+
+    @Override
+    public String toString() {
+        return "Task{" +
+                "name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", deadline=" + deadline +
+                ", isActive=" + isActive +
+                ", createdOn=" + createdOn +
+                '}';
+    }
 }

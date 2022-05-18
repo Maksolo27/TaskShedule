@@ -5,20 +5,19 @@ import db.Task;
 import lombok.SneakyThrows;
 
 import java.io.*;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class TaskService {
 
     private final Gson GSON = new Gson();
+    private static final String PATH = "src/main/resources/taskList.json";
     private final EncryptService encryptService = new EncryptService();
 
     @SneakyThrows
     public List<Task> getTasks(){
-        FileInputStream fileInputStream = new FileInputStream("src/main/resources/taskList.json");
-        Task[] tasks = GSON.fromJson(readFromInputStream(fileInputStream), Task[].class);
+        FileInputStream fileInputStream = new FileInputStream(PATH);
+        Task[] tasks = GSON.fromJson(readFile(fileInputStream), Task[].class);
         return Arrays.stream(tasks).sorted(new TaskComparator()).collect(Collectors.toList());
     }
 
@@ -29,7 +28,7 @@ public class TaskService {
             return Long.compare(task.getCreatedOn().getTime(), t1.getCreatedOn().getTime());
         }
     }
-    private String readFromInputStream(InputStream inputStream) throws IOException {
+    private String readFile(InputStream inputStream) throws IOException {
         StringBuilder resultStringBuilder = new StringBuilder();
         try (BufferedReader br = new BufferedReader(new InputStreamReader(inputStream))) {
             String line;
@@ -42,9 +41,55 @@ public class TaskService {
 
     @SneakyThrows
     public void addTask(Task task){
-        FileInputStream fileInputStream = new FileInputStream("src/main/resources/taskList.json");
-        task.setPassword(encryptService.encryptPassword(task.getPassword()));
-        Task[] tasks = GSON.fromJson(readFromInputStream(fileInputStream), Task[].class);
-        GSON.toJson(Arrays.asList(tasks, task));
+        FileInputStream fileInputStream = new FileInputStream(PATH);
+        task.setCreatedOn(new Date());
+
+        Task[] tasks = GSON.fromJson(readFile(fileInputStream), Task[].class);
+        List<Task> taskList = new ArrayList<>(List.of(tasks));
+        taskList.add(task);
+        writeFile(GSON.toJson(taskList), PATH);
     }
+
+    @SneakyThrows
+    private void writeFile(String json, String path){
+        try (FileWriter writer = new FileWriter(path)) {
+            writer.write(json);
+        }
+    }
+
+    private void deleteFile(String path){
+        File file = new File(path);
+        file.delete();
+    }
+
+    public List<Task> getCompletedTasks(){
+        List<Task> taskList = getTasks();
+        return taskList.stream()
+                .filter(task -> (task.getCompletedOn() != null && !task.isActive()))
+                .collect(Collectors.toList());
+    }
+
+    public void removeTask(String name){
+        List<Task> tasks = getTasks();
+        tasks = tasks.stream()
+                .filter(task -> !task.getName().equals(name))
+                .collect(Collectors.toList());
+        deleteFile(PATH);
+        writeFile(GSON.toJson(tasks), PATH);
+    }
+
+    public void updateTask(String name) {
+        List<Task> tasks = getTasks();
+
+    }
+
+    public Task getTask(String name){
+        List<Task> taskList = getTasks();
+        for (Task task : taskList)
+            if (task.getName().equals(name)) {
+                return task;
+            }
+        throw new NoSuchElementException();
+    }
+
 }
